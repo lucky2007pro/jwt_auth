@@ -16,7 +16,6 @@ from products.permissions import IsSeller
 
 
 class SellerRegisterView(APIView):
-    """Foydalanuvchini seller sifatida ro'yxatdan o'tkazish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -33,7 +32,6 @@ class SellerRegisterView(APIView):
 
 
 class SellerProfileView(APIView):
-    """Seller o'z profilini ko'rish va yangilash"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def get(self, request):
@@ -75,7 +73,6 @@ class SellerProfileView(APIView):
 
 
 class SellerDashboardView(APIView):
-    """Seller dashboard — statistikalar"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def get(self, request):
@@ -87,12 +84,10 @@ class SellerDashboardView(APIView):
         out_of_stock_products = products.filter(is_active=True, stock=0).count()
         total_views = products.aggregate(total=Sum('views_count'))['total'] or 0
 
-        # Orders statistikasi — hozircha 0 (orders app qo'shilganda yangilanadi)
         total_orders = 0
         pending_orders = 0
         total_revenue = 0
 
-        # Seller rating
         seller_profile = getattr(user, 'seller_profile', None)
         shop_rating = seller_profile.rating if seller_profile else 0
 
@@ -116,7 +111,6 @@ class SellerDashboardView(APIView):
 
 
 class SellerProductsView(APIView):
-    """Seller o'z mahsulotlarini ko'rish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def get(self, request):
@@ -124,7 +118,6 @@ class SellerProductsView(APIView):
             seller=request.user
         ).select_related('category', 'brand', 'seller').prefetch_related('images')
 
-        # Filter by status
         is_active = request.query_params.get('is_active')
         if is_active is not None:
             products = products.filter(is_active=is_active.lower() == 'true')
@@ -148,7 +141,6 @@ class SellerProductsView(APIView):
 
 
 class SellerPublicView(APIView):
-    """Do'kon ommaviy sahifasi — har kim ko'ra oladi"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, slug):
@@ -159,7 +151,6 @@ class SellerPublicView(APIView):
             seller_profile, context={'request': request}
         ).data
 
-        # Seller mahsulotlari
         products = Product.objects.filter(
             seller=seller_profile.user, is_active=True
         ).select_related('category', 'brand', 'seller').prefetch_related('images')

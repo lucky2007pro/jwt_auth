@@ -6,8 +6,6 @@ from accounts.models import CustomUser, SELLER
 
 
 class SellerRegisterSerializer(serializers.ModelSerializer):
-    """Seller profilini yaratish uchun"""
-
     class Meta:
         model = SellerProfile
         fields = ['shop_name', 'description', 'logo', 'banner', 'address', 'phone']
@@ -22,7 +20,6 @@ class SellerRegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        # User role'ni seller ga o'zgartirish
         user.user_role = SELLER
         user.save(update_fields=['user_role'])
 
@@ -33,7 +30,6 @@ class SellerRegisterSerializer(serializers.ModelSerializer):
 
 
 class SellerProfileSerializer(serializers.ModelSerializer):
-    """Seller profili to'liq ko'rish"""
     username = serializers.CharField(source='user.username', read_only=True)
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     email = serializers.EmailField(source='user.email', read_only=True)
@@ -60,7 +56,6 @@ class SellerProfileSerializer(serializers.ModelSerializer):
 
 
 class SellerProfileUpdateSerializer(serializers.ModelSerializer):
-    """Seller profilini yangilash"""
 
     class Meta:
         model = SellerProfile
@@ -69,15 +64,13 @@ class SellerProfileUpdateSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
-        # slug ni yangilash agar shop_name o'zgarsa
         if 'shop_name' in validated_data:
-            instance.shop_slug = ''  # save() da qayta generatsiya qiladi
+            instance.shop_slug = ''
         instance.save()
         return instance
 
 
 class SellerDashboardSerializer(serializers.Serializer):
-    """Seller dashboard statistikasi"""
     total_products = serializers.IntegerField()
     active_products = serializers.IntegerField()
     out_of_stock_products = serializers.IntegerField()
@@ -89,7 +82,6 @@ class SellerDashboardSerializer(serializers.Serializer):
 
 
 class SellerPublicSerializer(serializers.ModelSerializer):
-    """Ommaviy ko'rinadigan seller profili"""
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     products_count = serializers.SerializerMethodField()
 

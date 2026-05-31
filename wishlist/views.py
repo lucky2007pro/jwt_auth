@@ -9,7 +9,6 @@ from products.models import Product
 
 
 class WishlistView(APIView):
-    """Sevimlilar ro'yxati"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -29,7 +28,6 @@ class WishlistView(APIView):
 
 
 class WishlistToggleView(APIView):
-    """Sevimlilar ga qo'shish/olib tashlash (toggle)"""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -43,7 +41,6 @@ class WishlistToggleView(APIView):
         )
 
         if not created:
-            # Allaqachon mavjud — olib tashlash
             wishlist_item.delete()
             return Response({
                 'success': True,
@@ -59,7 +56,6 @@ class WishlistToggleView(APIView):
 
 
 class WishlistRemoveView(APIView):
-    """Sevimlilardan aniq mahsulotni olib tashlash"""
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, product_id):
