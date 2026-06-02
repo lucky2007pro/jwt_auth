@@ -13,10 +13,7 @@ from .serializers import (
 from .permissions import IsSeller, IsProductOwner, IsAdminUser
 
 
-# ==================== CATEGORY VIEWS ====================
-
 class CategoryListView(APIView):
-    """Barcha kategoriyalar ro'yxati (faqat parent=null bo'lganlar, children bilan)"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -33,15 +30,12 @@ class CategoryListView(APIView):
 
 
 class CategoryDetailView(APIView):
-    """Bitta kategoriya va uning mahsulotlari"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, slug):
         category = get_object_or_404(Category, slug=slug, is_active=True)
-        # Kategoriya ma'lumotlari
         category_data = CategorySerializer(category, context={'request': request}).data
 
-        # Shu kategoriya va uning bolalaridagi mahsulotlar
         category_ids = [category.id]
         children = category.children.filter(is_active=True)
         category_ids.extend(children.values_list('id', flat=True))
@@ -66,7 +60,6 @@ class CategoryDetailView(APIView):
 
 
 class CategoryCreateView(APIView):
-    """Admin: Kategoriya yaratish"""
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
 
     def post(self, request):
@@ -80,10 +73,7 @@ class CategoryCreateView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
-# ==================== BRAND VIEWS ====================
-
 class BrandListView(APIView):
-    """Barcha brendlar ro'yxati"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -97,7 +87,6 @@ class BrandListView(APIView):
 
 
 class BrandDetailView(APIView):
-    """Bitta brend va uning mahsulotlari"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, slug):
@@ -123,10 +112,7 @@ class BrandDetailView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-# ==================== PRODUCT VIEWS ====================
-
 class ProductListView(APIView):
-    """Barcha mahsulotlar ro'yxati (filter bilan)"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request):
@@ -134,7 +120,6 @@ class ProductListView(APIView):
             is_active=True
         ).select_related('category', 'brand', 'seller').prefetch_related('images')
 
-        # Filtrlash
         category_slug = request.query_params.get('category')
         brand_slug = request.query_params.get('brand')
         min_price = request.query_params.get('min_price')
@@ -146,7 +131,6 @@ class ProductListView(APIView):
         if category_slug:
             category = Category.objects.filter(slug=category_slug).first()
             if category:
-                # Shu kategoriya va uning bolalari
                 category_ids = [category.id]
                 category_ids.extend(
                     category.children.filter(is_active=True).values_list('id', flat=True)
@@ -171,7 +155,6 @@ class ProductListView(APIView):
         if in_stock and in_stock.lower() == 'true':
             products = products.filter(stock__gt=0)
 
-        # Saralash
         allowed_orderings = [
             'price', '-price', 'created_at', '-created_at',
             'views_count', '-views_count', 'name', '-name',
@@ -191,7 +174,6 @@ class ProductListView(APIView):
 
 
 class ProductDetailView(APIView):
-    """Mahsulot batafsil ko'rish"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, slug):
@@ -200,7 +182,6 @@ class ProductDetailView(APIView):
             .prefetch_related('images'),
             slug=slug, is_active=True
         )
-        # Ko'rishlar sonini oshirish
         product.views_count += 1
         product.save(update_fields=['views_count'])
 
@@ -213,7 +194,6 @@ class ProductDetailView(APIView):
 
 
 class ProductCreateView(APIView):
-    """Seller: Yangi mahsulot qo'shish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def post(self, request):
@@ -230,7 +210,6 @@ class ProductCreateView(APIView):
 
 
 class ProductUpdateView(APIView):
-    """Seller: O'z mahsulotini tahrirlash"""
     permission_classes = [permissions.IsAuthenticated, IsSeller, IsProductOwner]
 
     def get_object(self, pk):
@@ -268,7 +247,6 @@ class ProductUpdateView(APIView):
 
 
 class ProductDeleteView(APIView):
-    """Seller: O'z mahsulotini o'chirish (soft delete — is_active=False)"""
     permission_classes = [permissions.IsAuthenticated, IsSeller, IsProductOwner]
 
     def delete(self, request, pk):
@@ -282,10 +260,7 @@ class ProductDeleteView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-# ==================== PRODUCT IMAGE VIEWS ====================
-
 class ProductImageAddView(APIView):
-    """Seller: Mahsulotga rasm qo'shish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def post(self, request, pk):
@@ -320,7 +295,6 @@ class ProductImageAddView(APIView):
 
 
 class ProductImageDeleteView(APIView):
-    """Seller: Mahsulot rasmini o'chirish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def delete(self, request, pk, image_id):

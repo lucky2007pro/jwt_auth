@@ -20,7 +20,6 @@ class ReviewReplySerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    """Sharh ko'rish uchun to'liq serializer"""
     username = serializers.CharField(source='user.username', read_only=True)
     full_name = serializers.CharField(source='user.full_name', read_only=True)
     user_photo = serializers.SerializerMethodField()
@@ -47,7 +46,6 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
-    """Sharh qoldirish uchun"""
     images = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True, required=False
@@ -83,8 +81,6 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 
 
 class ReviewUpdateSerializer(serializers.ModelSerializer):
-    """O'z sharhini tahrirlash"""
-
     class Meta:
         model = Review
         fields = ['rating', 'comment', 'pros', 'cons']
@@ -96,5 +92,4 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
 
 
 class ReviewReplyCreateSerializer(serializers.Serializer):
-    """Seller yoki admin javobi"""
     text = serializers.CharField(required=True)

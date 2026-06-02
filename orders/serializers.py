@@ -48,7 +48,6 @@ class OrderStatusHistorySerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    """Buyurtma to'liq ko'rish"""
     items = OrderItemSerializer(many=True, read_only=True)
     shipping_address = ShippingAddressSerializer(read_only=True)
     status_history = OrderStatusHistorySerializer(many=True, read_only=True)
@@ -69,7 +68,6 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderListSerializer(serializers.ModelSerializer):
-    """Buyurtmalar ro'yxati uchun yengil serializer"""
     items_count = serializers.SerializerMethodField()
     status_display = serializers.CharField(source='get_status_display', read_only=True)
 
@@ -85,8 +83,7 @@ class OrderListSerializer(serializers.ModelSerializer):
 
 
 class CheckoutSerializer(serializers.Serializer):
-    """Savatchadan buyurtma yaratish"""
-    shipping_address_id = serializers.UUIDField(required=True)
+    shipping_address_id = serializers.IntegerField(required=True)
     payment_method = serializers.ChoiceField(
         choices=['cash', 'card', 'click', 'payme'], default='cash'
     )
@@ -101,7 +98,6 @@ class CheckoutSerializer(serializers.Serializer):
 
 
 class OrderStatusUpdateSerializer(serializers.Serializer):
-    """Buyurtma holatini o'zgartirish"""
     status = serializers.ChoiceField(
         choices=['confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded']
     )

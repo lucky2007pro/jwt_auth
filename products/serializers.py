@@ -3,7 +3,6 @@ from .models import Category, Brand, Product, ProductImage
 
 
 class CategoryChildSerializer(serializers.ModelSerializer):
-    """Kategoriyaning child (bola) kategoriyalari uchun serializer"""
 
     class Meta:
         model = Category
@@ -11,7 +10,6 @@ class CategoryChildSerializer(serializers.ModelSerializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
-    """Kategoriya serializer — children bilan"""
     children = CategoryChildSerializer(many=True, read_only=True)
     products_count = serializers.SerializerMethodField()
 
@@ -29,8 +27,6 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CategoryCreateSerializer(serializers.ModelSerializer):
-    """Kategoriya yaratish/tahrirlash uchun"""
-
     class Meta:
         model = Category
         fields = ['name', 'image', 'parent', 'is_active']
@@ -66,7 +62,6 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 
 class ProductListSerializer(serializers.ModelSerializer):
-    """Mahsulotlar ro'yxati uchun yengil serializer"""
     category_name = serializers.CharField(source='category.name', read_only=True, default=None)
     brand_name = serializers.CharField(source='brand.name', read_only=True, default=None)
     seller_name = serializers.CharField(source='seller.full_name', read_only=True)
@@ -97,12 +92,11 @@ class ProductListSerializer(serializers.ModelSerializer):
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
-    """Mahsulot batafsil ko'rish uchun to'liq serializer"""
     category = CategorySerializer(read_only=True)
     brand = BrandSerializer(read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     seller_name = serializers.CharField(source='seller.full_name', read_only=True)
-    seller_id = serializers.UUIDField(source='seller.id', read_only=True)
+    seller_id = serializers.IntegerField(source='seller.id', read_only=True)
     final_price = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     discount_percentage = serializers.FloatField(read_only=True)
     is_in_stock = serializers.BooleanField(read_only=True)
@@ -136,7 +130,6 @@ class ProductDetailSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
-    """Seller uchun mahsulot yaratish/tahrirlash"""
     images = serializers.ListField(
         child=serializers.ImageField(),
         write_only=True, required=False
@@ -175,12 +168,11 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
         validated_data['seller'] = request.user
         product = Product.objects.create(**validated_data)
 
-        # Rasmlarni saqlash
         for i, image in enumerate(images_data):
             ProductImage.objects.create(
                 product=product,
                 image=image,
-                is_primary=(i == 0),  # Birinchi rasm primary
+                is_primary=(i == 0),
             )
         return product
 
@@ -191,7 +183,6 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
 
-        # Yangi rasmlar qo'shish
         if images_data:
             for image in images_data:
                 ProductImage.objects.create(

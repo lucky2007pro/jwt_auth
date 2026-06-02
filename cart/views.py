@@ -11,7 +11,6 @@ from products.models import Product
 
 
 class CartView(APIView):
-    """Foydalanuvchi savatchasini ko'rish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -27,7 +26,6 @@ class CartView(APIView):
 
 
 class CartItemAddView(APIView):
-    """Savatchaga mahsulot qo'shish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -40,7 +38,6 @@ class CartItemAddView(APIView):
         product = Product.objects.get(id=serializer.validated_data['product_id'])
         quantity = serializer.validated_data.get('quantity', 1)
 
-        # Agar mahsulot allaqachon savatchada bo'lsa, sonini oshirish
         cart_item, item_created = CartItem.objects.get_or_create(
             cart=cart, product=product,
             defaults={'quantity': quantity}
@@ -63,7 +60,6 @@ class CartItemAddView(APIView):
 
 
 class CartItemUpdateView(APIView):
-    """Savatcha mahsuloti sonini o'zgartirish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def patch(self, request, item_id):
@@ -92,7 +88,6 @@ class CartItemUpdateView(APIView):
 
 
 class CartItemRemoveView(APIView):
-    """Savatchadan mahsulotni olib tashlash"""
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, item_id):
@@ -110,7 +105,6 @@ class CartItemRemoveView(APIView):
 
 
 class CartClearView(APIView):
-    """Savatchani to'liq tozalash"""
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request):

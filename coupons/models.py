@@ -36,7 +36,6 @@ class Coupon(BaseModel):
     valid_to = models.DateTimeField()
     is_active = models.BooleanField(default=True)
 
-    # Seller kuponi
     seller = models.ForeignKey(
         CustomUser, null=True, blank=True,
         on_delete=models.CASCADE, related_name='coupons'
@@ -54,7 +53,6 @@ class Coupon(BaseModel):
 
     @property
     def is_valid(self):
-        """Kupon haqiqiymi?"""
         now = timezone.now()
         if not self.is_active:
             return False
@@ -65,14 +63,13 @@ class Coupon(BaseModel):
         return True
 
     def calculate_discount(self, order_total):
-        """Chegirma summasini hisoblash"""
         if self.discount_type == PERCENTAGE:
             discount = order_total * (self.discount_value / 100)
             if self.max_discount:
                 discount = min(discount, self.max_discount)
         else:
             discount = self.discount_value
-        return min(discount, order_total)  # Narxdan oshmasligi kerak
+        return min(discount, order_total)
 
 
 class CouponUsage(BaseModel):

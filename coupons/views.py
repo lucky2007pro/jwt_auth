@@ -12,7 +12,6 @@ from products.permissions import IsSeller
 
 
 class CouponValidateView(APIView):
-    """Kupon haqiqiyligini tekshirish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -36,7 +35,6 @@ class CouponValidateView(APIView):
                 'message': "Kupon muddati o'tgan yoki faol emas.",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Per user limit tekshirish
         user_usage_count = CouponUsage.objects.filter(
             coupon=coupon, user=request.user
         ).count()
@@ -46,7 +44,6 @@ class CouponValidateView(APIView):
                 'message': "Siz bu kupondan maksimal foydalangansiz.",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Minimal summa tekshirish
         if order_total > 0 and order_total < coupon.min_order_amount:
             return Response({
                 'success': False,
@@ -68,10 +65,7 @@ class CouponValidateView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-# ==================== SELLER COUPON VIEWS ====================
-
 class SellerCouponListCreateView(APIView):
-    """Seller: O'z kuponlarini ko'rish va yaratish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def get(self, request):
@@ -97,7 +91,6 @@ class SellerCouponListCreateView(APIView):
 
 
 class SellerCouponDetailView(APIView):
-    """Seller: Kuponni tahrirlash/o'chirish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def put(self, request, pk):

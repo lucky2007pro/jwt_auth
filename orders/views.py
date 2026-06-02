@@ -17,10 +17,7 @@ from cart.models import Cart
 from products.permissions import IsSeller, IsAdminUser
 
 
-# ==================== SHIPPING ADDRESS VIEWS ====================
-
 class ShippingAddressListCreateView(APIView):
-    """Yetkazish manzillari ro'yxati va yangi qo'shish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
@@ -46,7 +43,6 @@ class ShippingAddressListCreateView(APIView):
 
 
 class ShippingAddressDetailView(APIView):
-    """Yetkazish manzilini ko'rish/tahrirlash/o'chirish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, pk):
@@ -93,10 +89,7 @@ class ShippingAddressDetailView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-# ==================== ORDER VIEWS ====================
-
 class CheckoutView(APIView):
-    """Savatchadan buyurtma yaratish"""
     permission_classes = [permissions.IsAuthenticated]
 
     @transaction.atomic
@@ -115,34 +108,28 @@ class CheckoutView(APIView):
                 'message': "Savatcha bo'sh. Avval mahsulot qo'shing.",
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Manzilni olish
         shipping_address = ShippingAddress.objects.get(
             id=serializer.validated_data['shipping_address_id']
         )
 
-        # Subtotal hisoblash
         subtotal = sum(
             item.product.final_price * item.quantity
             for item in cart.items.select_related('product').all()
         )
 
-        # Buyurtma yaratish
         order = Order.objects.create(
             user=user,
             shipping_address=shipping_address,
             payment_method=serializer.validated_data['payment_method'],
             note=serializer.validated_data.get('note', ''),
             subtotal=subtotal,
-            total=subtotal,  # Hozircha chegirmasiz
+            total=subtotal,
         )
 
-        # Buyurtma mahsulotlarini yaratish
         for cart_item in cart.items.select_related('product').all():
             product = cart_item.product
 
-            # Stock tekshirish
             if product.stock < cart_item.quantity:
-                # Tranzaktsiyani bekor qilish
                 raise Exception(
                     f"'{product.name}' omborda yetarli emas. Mavjud: {product.stock}"
                 )
@@ -157,11 +144,9 @@ class CheckoutView(APIView):
                 total=product.final_price * cart_item.quantity,
             )
 
-            # Stockdan kamaytirish
             product.stock -= cart_item.quantity
             product.save(update_fields=['stock'])
 
-        # Status tarixi
         OrderStatusHistory.objects.create(
             order=order,
             old_status='',
@@ -170,7 +155,6 @@ class CheckoutView(APIView):
             note="Buyurtma yaratildi.",
         )
 
-        # Savatchani tozalash
         cart.items.all().delete()
         cart.is_active = False
         cart.save(update_fields=['is_active'])
@@ -183,13 +167,11 @@ class CheckoutView(APIView):
 
 
 class OrderListView(APIView):
-    """Mening buyurtmalarim"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
         orders = Order.objects.filter(user=request.user).prefetch_related('items')
 
-        # Filter by status
         order_status = request.query_params.get('status')
         if order_status:
             orders = orders.filter(status=order_status)
@@ -204,7 +186,6 @@ class OrderListView(APIView):
 
 
 class OrderDetailView(APIView):
-    """Buyurtma batafsil ko'rish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, order_number):
@@ -223,7 +204,6 @@ class OrderDetailView(APIView):
 
 
 class OrderCancelView(APIView):
-    """Buyurtmani bekor qilish (faqat PENDING holatda)"""
     permission_classes = [permissions.IsAuthenticated]
 
     @transaction.atomic
@@ -242,13 +222,11 @@ class OrderCancelView(APIView):
         order.status = CANCELLED
         order.save(update_fields=['status'])
 
-        # Stockni qaytarish
         for item in order.items.select_related('product').all():
             if item.product:
                 item.product.stock += item.quantity
                 item.product.save(update_fields=['stock'])
 
-        # Status tarixi
         OrderStatusHistory.objects.create(
             order=order,
             old_status=old_status,
@@ -264,14 +242,12 @@ class OrderCancelView(APIView):
 
 
 class OrderStatusUpdateView(APIView):
-    """Seller/Admin: Buyurtma holatini o'zgartirish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     @transaction.atomic
     def patch(self, request, order_number):
         order = get_object_or_404(Order, order_number=order_number)
 
-        # Seller faqat o'z mahsulotlari bor buyurtmalarni o'zgartira oladi
         seller_items = order.items.filter(seller=request.user)
         if not seller_items.exists() and request.user.user_role != 'admin':
             return Response({
@@ -290,7 +266,6 @@ class OrderStatusUpdateView(APIView):
             order.is_paid = True
         order.save(update_fields=['status', 'is_paid'])
 
-        # Status tarixi
         OrderStatusHistory.objects.create(
             order=order,
             old_status=old_status,
@@ -307,11 +282,9 @@ class OrderStatusUpdateView(APIView):
 
 
 class SellerOrdersView(APIView):
-    """Seller: O'z buyurtmalari ro'yxati"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def get(self, request):
-        # Seller mahsulotlari bor buyurtmalar
         order_ids = OrderItem.objects.filter(
             seller=request.user
         ).values_list('order_id', flat=True).distinct()

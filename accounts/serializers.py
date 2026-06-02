@@ -9,9 +9,7 @@ from django.contrib.auth.password_validation import validate_password
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    def __init__(self, instance=None, *args, **kwargs):
-        super().__init__(instance, *args, **kwargs)
-        self.fields['email_or_phone'] = serializers.CharField(required=True)
+    email_or_phone = serializers.CharField(required=True, write_only=True)
 
     class Meta:
         model = CustomUser

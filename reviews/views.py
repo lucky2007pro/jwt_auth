@@ -14,7 +14,6 @@ from products.permissions import IsSeller
 
 
 class ProductReviewsView(APIView):
-    """Mahsulot sharhlari ro'yxati"""
     permission_classes = [permissions.AllowAny]
 
     def get(self, request, product_id):
@@ -23,13 +22,11 @@ class ProductReviewsView(APIView):
             product=product, is_approved=True
         ).select_related('user').prefetch_related('images', 'replies__user')
 
-        # Statistika
         stats = reviews.aggregate(
             avg_rating=Avg('rating'),
             total_reviews=Count('id'),
         )
 
-        # Rating taqsimoti
         rating_distribution = {}
         for i in range(1, 6):
             rating_distribution[str(i)] = reviews.filter(rating=i).count()
@@ -50,7 +47,6 @@ class ProductReviewsView(APIView):
 
 
 class ReviewCreateView(APIView):
-    """Sharh qoldirish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):
@@ -67,7 +63,6 @@ class ReviewCreateView(APIView):
 
 
 class ReviewUpdateView(APIView):
-    """O'z sharhini tahrirlash"""
     permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request, pk):
@@ -96,7 +91,6 @@ class ReviewUpdateView(APIView):
 
 
 class ReviewDeleteView(APIView):
-    """O'z sharhini o'chirish"""
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, pk):
@@ -109,13 +103,11 @@ class ReviewDeleteView(APIView):
 
 
 class ReviewReplyView(APIView):
-    """Seller yoki admin sharh ga javob berish"""
     permission_classes = [permissions.IsAuthenticated, IsSeller]
 
     def post(self, request, pk):
         review = get_object_or_404(Review, pk=pk)
 
-        # Tekshirish: seller faqat o'z mahsulotiga javob bera oladi
         if review.product.seller != request.user:
             return Response({
                 'success': False,
@@ -139,7 +131,6 @@ class ReviewReplyView(APIView):
 
 
 class MyReviewsView(APIView):
-    """Mening sharhlarim"""
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):

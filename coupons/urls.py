@@ -7,5 +7,5 @@ from .views import (
 urlpatterns = [
     path('validate/', CouponValidateView.as_view(), name='coupon-validate'),
     path('seller/', SellerCouponListCreateView.as_view(), name='seller-coupon-list'),
-    path('seller/<uuid:pk>/', SellerCouponDetailView.as_view(), name='seller-coupon-detail'),
+    path('seller/<int:pk>/', SellerCouponDetailView.as_view(), name='seller-coupon-detail'),
 ]

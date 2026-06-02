@@ -13,7 +13,7 @@ class WishlistItemSerializer(serializers.ModelSerializer):
 
 
 class WishlistToggleSerializer(serializers.Serializer):
-    product_id = serializers.UUIDField(required=True)
+    product_id = serializers.IntegerField(required=True)
 
     def validate_product_id(self, value):
         from products.models import Product

@@ -5,7 +5,6 @@ from shared.models import BaseModel
 from accounts.models import CustomUser
 from products.models import Product
 
-# Order status
 PENDING = 'pending'
 CONFIRMED = 'confirmed'
 PROCESSING = 'processing'
@@ -24,7 +23,6 @@ ORDER_STATUS = (
     (REFUNDED, 'Qaytarildi'),
 )
 
-# Payment methods
 CASH = 'cash'
 CARD = 'card'
 CLICK = 'click'
@@ -59,7 +57,6 @@ class ShippingAddress(BaseModel):
         return f"{self.full_name} — {self.region}, {self.district}"
 
     def save(self, *args, **kwargs):
-        # Agar bu default bo'lsa, boshqa default manzillarni o'chirish
         if self.is_default:
             ShippingAddress.objects.filter(
                 user=self.user, is_default=True
@@ -68,7 +65,6 @@ class ShippingAddress(BaseModel):
 
 
 def generate_order_number():
-    """Unikal buyurtma raqami yaratish: ORD-XXXXXX"""
     from django.utils import timezone
     date_str = timezone.now().strftime('%y%m%d')
     random_str = ''.join(random.choices(string.digits, k=4))
@@ -128,7 +124,6 @@ class OrderItem(BaseModel):
     seller = models.ForeignKey(
         CustomUser, on_delete=models.SET_NULL, null=True, related_name='sold_items'
     )
-    # Snapshot — mahsulot o'chsa ham saqlanadi
     product_name = models.CharField(max_length=300)
     product_price = models.DecimalField(max_digits=12, decimal_places=2)
     quantity = models.PositiveIntegerField()

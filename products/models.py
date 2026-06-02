@@ -27,7 +27,6 @@ class Category(BaseModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
-            # Ensure unique slug
             original_slug = self.slug
             counter = 1
             while Category.objects.filter(slug=self.slug).exclude(pk=self.pk).exists():
@@ -37,7 +36,6 @@ class Category(BaseModel):
 
     @property
     def full_path(self):
-        """Kategoriya to'liq yo'li: Elektronika → Telefonlar → Samsung"""
         parts = [self.name]
         parent = self.parent
         while parent:
@@ -124,21 +122,18 @@ class Product(BaseModel):
 
     @property
     def discount_percentage(self):
-        """Chegirma foizi"""
         if self.discount_price and self.price > 0:
             return round((1 - self.discount_price / self.price) * 100, 1)
         return 0
 
     @property
     def final_price(self):
-        """Yakuniy narx (chegirmali yoki oddiy)"""
         if self.discount_price:
             return self.discount_price
         return self.price
 
     @property
     def primary_image(self):
-        """Asosiy rasm"""
         img = self.images.filter(is_primary=True).first()
         if not img:
             img = self.images.first()
@@ -162,7 +157,6 @@ class ProductImage(BaseModel):
         return f"{self.product.name} - {'Asosiy' if self.is_primary else 'Qo\'shimcha'}"
 
     def save(self, *args, **kwargs):
-        # Agar bu rasm primary bo'lsa, boshqa primary rasmlarni o'chirish
         if self.is_primary:
             ProductImage.objects.filter(
                 product=self.product, is_primary=True
