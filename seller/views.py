@@ -1,18 +1,19 @@
-from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import permissions
+from django.db.models import Sum
 from django.shortcuts import get_object_or_404
-from django.db.models import Sum, Count, Q
+from rest_framework import permissions
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from products.models import Product
+from products.permissions import IsSeller
+from products.serializers import ProductListSerializer
 from .models import SellerProfile
 from .serializers import (
     SellerRegisterSerializer, SellerProfileSerializer,
     SellerProfileUpdateSerializer, SellerDashboardSerializer,
     SellerPublicSerializer,
 )
-from products.models import Product
-from products.serializers import ProductListSerializer
-from products.permissions import IsSeller
 
 
 class SellerRegisterView(APIView):

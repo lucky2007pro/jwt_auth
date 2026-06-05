@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Database
+db.sqlite3
+
+# IDE / Editors
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+
+# Media and static directories
+media/
+
+# Windows specific
+Thumbs.db
+Desktop.ini
+nul
